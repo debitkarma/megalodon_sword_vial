@@ -1,6 +1,5 @@
 # Vial for the Megalodon Sword
 
-
 This is a Vial keymap and configuration for the Megalodon Sword (DOIO KB12-01), along with extended notes and stuff.
 
 ## Background (if you're curious)
@@ -89,7 +88,8 @@ This config is... like 98% of the way there.
 * Vial works to set all the keys and stuff.
 
 What does NOT work:
-* Can't change/set rotary encoder functions via Vial.
+* Can't change/set rotary encoder functions for rotation via Vial.
+  * Rotary encoder button still works per usual!
 * Can't reference RGB values in the firmware files.
 
 ### UDEV Rules, Compiling, and Flashing
