@@ -16,7 +16,7 @@ I can't say too much, since I don't own one myself, but the appeal of this seems
 
 * It's compact, and great as an addition to your smaller keyboard.
 * The rotary encoder has very satisfying detents and has a very nice feel.
-* There's per-key RGB
+* ~~There's per-key RGB~~ I thought this had per-key RGB due to the use of rgb_matrix in the firmware, but that shows how much I know... It's RGB backlighting, but not per-key, at least that I've seen.
 * It can run QMK, Via, and Vial!
 
 The board is based on an STM32F103. I assume there's 64k available, but the default firmware is ~54kb, so we kept it to that or less. It uses the stm32duino bootloader.
@@ -38,14 +38,46 @@ Below, I'll explain the changes I made from the [same config in the Official Via
 
 Finally, let's look at the different changes we made to the default Vial stuff.
 
+### info.json
+
+Possibly one of the most important files when you're creating a keyboard or porting one to use these firmwares... When you search online, you'll see a lot of references to `info.json`. I noticed that `keyboard.json` fills the need and is in the same place, but it seemed a lot of folks weren't clear that `keyboard.json` is the new replacement for `info.json`. Worth calling out, apparently.
+
 ### keyboard.json
+
+[Enabling solid_color](https://github.com/debitkarma/megalodon_sword_vial/blob/47e4ba489fc1466d047f69fc678383710070a55a/vial-qmk/keyboards/doio/kb12/keyboard.json#L14): As part of my quest to figure out why setting a static color wasn't working, I ended up manually adding this line which was strangely missing in this config, even though it was present in most of the others I saw. I added this and enabled it.
+
+[Disabling animations](https://github.com/debitkarma/megalodon_sword_vial/blob/47e4ba489fc1466d047f69fc678383710070a55a/vial-qmk/keyboards/doio/kb12/keyboard.json#L13): I ended up disabling all the animations in the config. FirstOriginalOGSteve2 wasn't using them, and they were taking up needless space in the firmware, which I was hesitating on the size of.
+
+[Setting Default "Animation" and color](https://github.com/debitkarma/megalodon_sword_vial/blob/47e4ba489fc1466d047f69fc678383710070a55a/vial-qmk/keyboards/doio/kb12/keyboard.json#L58): This is where we set the "animation" to be the solid color that we want. Hue and saturation was requested, and we didn't specify value because the brightness is/was set in some other way to be 100%.
+
+[Manually setting encoder resolution](https://github.com/debitkarma/megalodon_sword_vial/blob/47e4ba489fc1466d047f69fc678383710070a55a/vial-qmk/keyboards/doio/kb12/keyboard.json#L90): I don't think that this is really needed, but it's also not hurting anything. I put this here in case the dial wasn't convenient enough to change layers. I don't have the keyb myself, after all. You can probably remove this (though I haven't tested this).
+
 
 ### rules.mk
 
+[Adding (possibly redundan) encoder line](https://github.com/debitkarma/megalodon_sword_vial/blob/47e4ba489fc1466d047f69fc678383710070a55a/vial-qmk/keyboards/doio/kb12/keymaps/vial/rules.mk#L6): In the quest to get the encoder working with Vial, I added this because I saw this in other configs *alongside* the following line, `ENCODER_MAP_ENABLE`. Seemingly, the first enables encoders to begin with, and the second allows them to operate differently on different layers.
+
+[Leaving Vial insecure](https://github.com/debitkarma/megalodon_sword_vial/blob/47e4ba489fc1466d047f69fc678383710070a55a/vial-qmk/keyboards/doio/kb12/keymaps/vial/rules.mk#L12): As part of the constant testing process, we left this off to make it easy to reassign buttons, jump back into bootloader mode, etc. Especially in case we somehow borked the firmware process. Once the final config is figured out, we can re-enable this. Or not, if you're not concerned.
+
 ### config.h
+
+[Manually setting the "magic serial"](https://github.com/debitkarma/megalodon_sword_vial/blob/47e4ba489fc1466d047f69fc678383710070a55a/vial-qmk/keyboards/doio/kb12/keymaps/vial/config.h#L13): We faced an issue with the initial version of the application we were using to reprogram the keyboard via GUI - it stopped seeing the keyboard! This was an attempt to see if we had something else missing in the firmware or else it wasn't doing what it was supposed. This was also tough to find in header format, so I left it here for reference. If you uncomment and compile, you'll get an error since you can't manually re-define the serial once instantiated. It's here for documentation only. You can safely remove this, since it's just comments anyway.
+
+[Setting the encoder pins via header](https://github.com/debitkarma/megalodon_sword_vial/blob/47e4ba489fc1466d047f69fc678383710070a55a/vial-qmk/keyboards/doio/kb12/keymaps/vial/config.h#L17): While troubleshooting, I tried to experiment with setting the encoder pins/pads via headers. I realized we didn't need to, and this isn't the correct format for it anyway I think. This needs to be removed, but it's just comments and doesn't hurt anything.
 
 ### keymap.c
 
+[Removing the enums for layer names](https://github.com/debitkarma/megalodon_sword_vial/blob/47e4ba489fc1466d047f69fc678383710070a55a/vial-qmk/keyboards/doio/kb12/keymaps/vial/keymap.c#L21): You can name layers in QMK, but Via/L don't like it to various degrees. They also don't support named layers for encoders specifically. So I commented these out since we don't need them. You could leave them in and not hurt anything. You need to declare these names before you use them, and "enums" make sure the underlying values aren't reused mistakenly. It's the "right" way to do it, in case you want to use them.
+
+[Numbers for layers](https://github.com/debitkarma/megalodon_sword_vial/blob/47e4ba489fc1466d047f69fc678383710070a55a/vial-qmk/keyboards/doio/kb12/keymaps/vial/keymap.c#L33): Per the above comment, we're manually using numbers to identify our layers. Again, because Vial doesn't like named layers for encoders. Changing them here, makes the below code more consistent.
+
+[Encoder Map Block](https://github.com/debitkarma/megalodon_sword_vial/blob/47e4ba489fc1466d047f69fc678383710070a55a/vial-qmk/keyboards/doio/kb12/keymaps/vial/keymap.c#L48): I manually put in `2` as the number of directions while troubeshooting. This can be removed and is unnecessary. You can see that the encoder layers are specified to match numbers as above, and that the assignment is the switch layers. Hard coding like this is not the best approach and it should be modular, so it works regardless of how many layers you have defined or enabled. It's fine for this case. Took a few seconds and we move on.
+
+[We set solid color on keyboard boot](https://github.com/debitkarma/megalodon_sword_vial/blob/47e4ba489fc1466d047f69fc678383710070a55a/vial-qmk/keyboards/doio/kb12/keymaps/vial/keymap.c#L60): I set this to a solid color and discovered that the `noeeprom` methods are the ones that work. I left the `HSV_OFF` line to assist in future troubleshooting.
+
+[RGB glow for layer state](https://github.com/debitkarma/megalodon_sword_vial/blob/47e4ba489fc1466d047f69fc678383710070a55a/vial-qmk/keyboards/doio/kb12/keymaps/vial/keymap.c#L79): I have no idea why the keyboard is set to use `rgb_matrix` instead of `rgblight`, nor do I know why the regular `setrgb` and `sethsv` methods don't work... But the `noeeprom` method does. There appears only to be an hsv version of that method, so that's a little more work for us. If there's an rgb version of the noeeprom method, or I figure out why the standard methods don't work, I'll be happy. We'll both be happy.
+
+Aside from that, you can probably figure out how this works. Use some AI thing if you need.
 
 ## Important Takeaways
 
