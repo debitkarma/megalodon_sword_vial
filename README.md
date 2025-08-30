@@ -75,11 +75,15 @@ Possibly one of the most important files when you're creating a keyboard or port
 
 [We set solid color on keyboard boot](https://github.com/debitkarma/megalodon_sword_vial/blob/47e4ba489fc1466d047f69fc678383710070a55a/vial-qmk/keyboards/doio/kb12/keymaps/vial/keymap.c#L60): I set this to a solid color and discovered that the `noeeprom` methods are the ones that work. I left the `HSV_OFF` line to assist in future troubleshooting.
 
-[RGB glow for layer state](https://github.com/debitkarma/megalodon_sword_vial/blob/47e4ba489fc1466d047f69fc678383710070a55a/vial-qmk/keyboards/doio/kb12/keymaps/vial/keymap.c#L79): I have no idea why the keyboard is set to use `rgb_matrix` instead of `rgblight`, nor do I know why the regular `setrgb` and `sethsv` methods don't work... But the `noeeprom` method does. There appears only to be an hsv version of that method, so that's a little more work for us. If there's an rgb version of the noeeprom method, or I figure out why the standard methods don't work, I'll be happy. We'll both be happy.
+[RGB glow for layer state](https://github.com/debitkarma/megalodon_sword_vial/blob/47e4ba489fc1466d047f69fc678383710070a55a/vial-qmk/keyboards/doio/kb12/keymaps/vial/keymap.c#L79): I have no idea why the keyboard is set to use `rgb_matrix` instead of `rgblight`, nor do I know why the regular `setrgb` and `sethsv` methods don't work... But the `noeeprom` method does. There appears only to be an hsv version of that method, so that's a little more work for us. If there's an rgb version of the noeeprom method, or I figure out why the standard methods don't work, I'll be happy. We'll both be happy. [I created a tool to convert RGB values into HSV to deal with this.](#colors)
 
 Aside from that, you can probably figure out how this works. Use some AI thing if you need.
 
 ## Important Takeaways
+
+### Colors
+
+Since I couldn't find an rgb version of those functions, I slapped together a little tool with AI to convert the values into the correct format to just paste into the config. [Access it here and follow the instructions.](https://debitkarma.github.io/rgb-to-hsv-tool/)
 
 ### Setup
 
